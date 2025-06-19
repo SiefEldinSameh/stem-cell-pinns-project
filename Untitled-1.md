@@ -347,243 +347,184 @@ New step size: hₙₑw = h × (tolerance/error)^(1/5)
 
 ---
 
-## 5. Machine Learning Implementation: Physics-Informed Neural Networks (PINNs)
+# 🧠 Physics-Informed Neural Networks for Stem Cell Dynamics
 
-### 5.1 PINN Fundamentals
+## 🎯 Core Concept
 
-#### 5.1.1 Core Philosophy
+**Traditional vs. PINN Approach**
+- **Traditional**: Discretize domain → solve at grid points → interpolate
+- **PINN**: Learn continuous functions that inherently satisfy physics laws
 
-Traditional numerical methods discretize the domain and solve for values at grid points. PINNs take a fundamentally different approach:
-
-- **Continuous representation**: Neural networks naturally provide continuous functions
-- **Physics embedding**: Differential equations become part of the loss function
-- **Data-driven**: Can incorporate experimental observations
-- **Differentiable**: Automatic differentiation for computing derivatives
-
-#### 5.1.2 PINN Architecture for ODE Systems
-
-For our stem cell system, the neural network:
-
-**Input:** Time t (1 dimension)
-**Output:** [G(t), P(t)] (2 dimensions)
-
-The network learns to approximate the solution functions G(t) and P(t) directly.
-
-### 5.2 Loss Function Design
-
-#### 5.2.1 Multi-Objective Loss
-
-The total loss combines multiple objectives:
-
-```
-L_total = w_physics × L_physics + w_initial × L_initial
-```
-
-Where:
-- `L_physics`: Ensures the ODE is satisfied
-- `L_initial`: Enforces initial conditions
-- `w_physics, w_initial`: Adaptive weights
-
-#### 5.2.2 Physics Loss Computation
-
-For each collocation point t_i:
-
-1. **Forward pass**: Compute G(t_i) and P(t_i)
-2. **Automatic differentiation**: Compute dG/dt and dP/dt
-3. **Residual calculation**:
-
-$R_G = \frac{dG}{dt} - \left[\frac{a_1G^n}{\theta_{a1}^n + G^n} + \frac{b_1\theta_{b1}^m}{\theta_{b1}^m + G^mP^m} - k_1G\right]$
-
-$R_P = \frac{dP}{dt} - \left[\frac{a_2P^n}{\theta_{a2}^n + P^n} + \frac{b_2\theta_{b2}^m}{\theta_{b2}^m + G^mP^m} - k_2P\right]$
-
-
-4. **Physics loss**: `L_physics = mean(R_G² + R_P²)`
-
-#### 5.2.3 Initial Condition Loss
-
-```
-L_initial = (G(0) - G₀)² + (P(0) - P₀)²
-```
-
-Where G₀ and P₀ are the specified initial conditions.
-
-### 5.3 Network Architecture Design
-
-#### 5.3.1 Case-Specific Architectures
-
-**Case 1 (Symmetric):**
-- Hidden layers: [128, 128, 64]
-- Total parameters: ~25,000
-- Reasoning: Simpler dynamics require less complexity
-
-**Case 2 (Asymmetric):**
-- Hidden layers: [256, 256, 256, 128]
-- Total parameters: ~200,000
-- Reasoning: More complex dynamics need greater representational capacity
-
-#### 5.3.2 Activation Function Choice
-
-**Hyperbolic Tangent (tanh):**
-- Smooth and differentiable everywhere
-- Bounded output helps with numerical stability
-- Natural choice for ODEs due to smoothness properties
-
-### 5.4 Training Strategy
-
-#### 5.4.1 Collocation Point Selection
-
-**Uniform sampling**: Points distributed evenly over [0, 5]
-- Case 1: 1000 points
-- Case 2: 2000 points (more complex dynamics)
-
-**Alternative strategies** (for future work):
-- Adaptive sampling based on residual magnitude
-- Clustered sampling in regions of rapid change
-
-#### 5.4.2 Optimization Details
-
-**Adam Optimizer:**
-- Learning rate: 1e-3 initially, reduced during training
-- β₁ = 0.9, β₂ = 0.999 (standard Adam parameters)
-- Weight decay: 1e-4 for regularization
-
-**Training Schedule:**
-- Case 1: 30,000 epochs (~3.3 minutes)
-- Case 2: 50,000 epochs (~6.2 minutes)
-
-### 5.5 Results Analysis
-
-#### 5.5.1 Quantitative Metrics
-
-**Mean Squared Error (MSE):**
-- Case 1: MSE_G = 2.34×10⁻⁵, MSE_P = 1.87×10⁻⁵
-- Case 2: MSE_G = 4.67×10⁻⁴, MSE_P = 3.21×10⁻⁴
-
-**Mean Absolute Error (MAE):**
-- Case 1: MAE_G = 0.0031, MAE_P = 0.0028
-- Case 2: MAE_G = 0.0089, MAE_P = 0.0076
-
-#### 5.5.2 Computational Efficiency Comparison
-
-| Method | Case 1 Time | Case 2 Time | Speedup Factor |
-|--------|-------------|-------------|----------------|
-| Numerical | 0.023s | 0.031s | 1.0 (baseline) |
-| PINNs | 847.3s | 1,534.8s | 0.000027 |
-
-**Analysis:**
-- PINNs are ~37,000× slower for this problem size
-- However, once trained, evaluation at any point is instantaneous
-- For problems requiring many forward solves, amortized cost may favor PINNs
+> *"PINNs embed differential equations directly into the learning process, creating solutions that are both data-driven and physics-consistent."*
 
 ---
 
-## 6. Detailed Comparison and Analysis
+## 🏗️ Architecture Design
 
-### 6.1 Accuracy Assessment
+### Network Structure
+Our PINN takes time `t` as input and outputs stem cell populations `[G(t), P(t)]`:
 
-#### 6.1.1 Convergence Behavior
-
-**Numerical Methods:**
-- Trapezoidal: Second-order convergence with step size
-- Radau: Fifth-order convergence, excellent for stiff systems
-- deSolve: Adaptive error control maintains specified tolerance
-
-**PINNs:**
-- Convergence depends on network capacity and training
-- Can achieve arbitrary accuracy with sufficient resources
-- May struggle with sharp transitions or boundary layers
-
-#### 6.1.2 Error Sources
-
-**Numerical Methods:**
-- Discretization error (dominant)
-- Round-off error (usually negligible)
-- Convergence tolerance in implicit solvers
-
-**PINNs:**
-- Approximation error (neural network capacity)
-- Optimization error (incomplete training)
-- Collocation point distribution effects
-
-### 6.2 Computational Complexity
-
-#### 6.2.1 Time Complexity
-
-**Numerical Methods:**
-- Per step: O(n³) for implicit methods (Jacobian solve)
-- Total: O(N × n³) where N is number of time steps
-- Adaptive methods: Variable N based on desired accuracy
-
-**PINNs:**
-- Training: O(epochs × batch_size × forward_passes)
-- Evaluation: O(network_depth × layer_width)
-- One-time training cost, then fast evaluation
-
-#### 6.2.2 Memory Requirements
-
-**Numerical Methods:**
-- Minimal memory: Store current state and intermediate calculations
-- Memory usage independent of solution complexity
-
-**PINNs:**
-- Store all network parameters
-- Memory scales with network size and batch size
-- GPU memory requirements for efficient training
-
-### 6.3 Flexibility and Extensibility
-
-#### 6.3.1 Parameter Sensitivity Analysis
-
-**Numerical Methods:**
-- Require re-solving for each parameter set
-- Efficient for single parameter studies
-- Can be combined with optimization routines
-
-**PINNs:**
-- Can potentially learn parameter dependencies
-- Transfer learning between similar systems
-- Uncertainty quantification through ensemble methods
-
-#### 6.3.2 Incorporating Additional Constraints
-
-**Experimental Data Integration:**
 ```
+Input: t (time) → Neural Network → Output: [G(t), P(t)]
+```
+
+**Case-Specific Architectures:**
+
+| Case | Architecture | Parameters | Rationale |
+|------|-------------|------------|-----------|
+| **Case 1** (Symmetric) | `[128, 128, 64]` | ~25K | Simpler dynamics, less complexity needed |
+| **Case 2** (Asymmetric) | `[256, 256, 256, 128]` | ~200K | Complex dynamics require more capacity |
+
+### 🔧 Key Components
+
+**Activation Function: `tanh`**
+- ✅ Smooth and differentiable everywhere
+- ✅ Bounded output for numerical stability
+- ✅ Natural choice for ODE systems
+
+---
+
+## 📊 Multi-Objective Loss Function
+
+The PINN learns by minimizing a composite loss:
+
+```
+𝐋_total = w_physics × 𝐋_physics + w_initial × 𝐋_initial
+```
+
+### 🔬 Physics Loss
+Ensures the neural network satisfies our ODE system:
+
+For each time point `t_i`:
+1. **Forward pass**: Compute `G(t_i)` and `P(t_i)`
+2. **Auto-differentiation**: Calculate `dG/dt` and `dP/dt`
+3. **Residual computation**: Check how well the ODE is satisfied
+
+**Residual Equations:**
+```
+R_G = dG/dt - [Growth_term + Interaction_term - Decay_term]
+R_P = dP/dt - [Growth_term + Interaction_term - Decay_term]
+```
+
+**Physics Loss:** `𝐋_physics = mean(R_G² + R_P²)`
+
+### 🎯 Initial Condition Loss
+Enforces proper starting conditions:
+```
+𝐋_initial = (G(0) - G₀)² + (P(0) - P₀)²
+```
+
+---
+
+## 🚀 Training Strategy
+
+### Collocation Points
+**Smart Sampling Strategy:**
+- **Case 1**: 1,000 uniformly distributed points over [0, 5]
+- **Case 2**: 2,000 points (higher complexity demands more samples)
+
+### 🔄 Optimization Details
+
+**Adam Optimizer Configuration:**
+- Learning rate: `1e-3` (with adaptive reduction)
+- Regularization: `1e-4` weight decay
+- Gradient clipping for stability
+
+**Training Schedule:**
+- **Case 1**: 30,000 epochs (~3.3 minutes)
+- **Case 2**: 50,000 epochs (~6.2 minutes) + curriculum learning
+
+### 🎓 Advanced Techniques (Case 2)
+
+**Curriculum Learning:**
+- Start with shorter time intervals
+- Gradually extend to full domain
+- Helps with complex dynamics convergence
+
+**Adaptive Loss Weighting:**
+- Dynamically balance physics vs. initial condition losses
+- Prevents one component from dominating
+
+---
+
+## 📈 Performance Analysis
+
+### Accuracy Metrics
+
+| Metric | Case 1 | Case 2 |
+|--------|--------|--------|
+| **MSE_G** | 2.34×10⁻⁵ | 4.67×10⁻⁴ |
+| **MSE_P** | 1.87×10⁻⁵ | 3.21×10⁻⁴ |
+| **MAE_G** | 0.0031 | 0.0089 |
+| **MAE_P** | 0.0028 | 0.0076 |
+
+### ⚡ Computational Trade-offs
+
+| Method | Training Time | Evaluation | Scalability |
+|--------|---------------|------------|-------------|
+| **Numerical** | ~0.03s | Fast | Re-solve for new parameters |
+| **PINN** | ~850-1535s | **Instant** | One-time training cost |
+
+**Key Insight**: PINNs have high upfront cost but excel in scenarios requiring:
+- Multiple evaluations at different time points
+- Parameter sensitivity studies
+- Real-time applications after training
+
+---
+
+## 🔍 Method Comparison
+
+### Strengths & Limitations
+
+#### 🟢 PINN Advantages
+- **Continuous solutions** (evaluate at any time point)
+- **Physics-consistent** (satisfies ODEs by construction)
+- **Data integration** (can incorporate experimental observations)
+- **Mesh-free** (no spatial discretization needed)
+
+#### 🔴 PINN Challenges
+- **Training time** (significantly longer than numerical methods)
+- **Architecture sensitivity** (requires careful network design)
+- **Sharp transitions** (may struggle with discontinuities)
+
+#### 🟢 Numerical Method Advantages
+- **Speed** (extremely fast for single solves)
+- **Reliability** (well-established convergence properties)
+- **Robustness** (consistent across parameter ranges)
+
+---
+
+## 🔮 Future Enhancements
+
+### Adaptive Strategies
+- **Smart collocation**: Focus points where residuals are high
+- **Transfer learning**: Leverage trained models for similar systems
+- **Uncertainty quantification**: Bayesian neural networks for confidence intervals
+
+### Extended Capabilities
+```python
+# Data integration
 L_data = Σ||NN(t_exp) - y_exp||²
-```
 
-**Conservation Laws:**
-```
+# Conservation laws
 L_conservation = ||∫G(t)dt + ∫P(t)dt - constant||²
-```
 
-**Boundary Conditions:**
-```
+# Boundary conditions
 L_boundary = ||NN(t_boundary) - y_boundary||²
 ```
 
-### 6.4 Robustness Analysis
-
-#### 6.4.1 Numerical Stability
-
-**Stiff Systems:**
-- Numerical: Radau method excels, trapezoidal adequate
-- PINNs: Can struggle with multiple time scales
-
-**Parameter Variations:**
-- Numerical: Consistent performance across parameter ranges
-- PINNs: May require retraining for significantly different parameters
-
-#### 6.4.2 Noise Sensitivity
-
-**Input Noise:**
-- Numerical: Propagation depends on system dynamics
-- PINNs: Learned smoothness can provide implicit denoising
-
-**Parameter Uncertainty:**
-- Numerical: Monte Carlo sampling straightforward
-- PINNs: Bayesian neural networks for uncertainty quantification
-
 ---
+
+## 💡 Key Takeaways
+
+1. **Choose your battles**: PINNs excel when you need continuous solutions or multiple evaluations
+2. **Architecture matters**: Match network complexity to problem difficulty
+3. **Training is an art**: Use curriculum learning and adaptive weighting for complex systems
+4. **Physics first**: The embedded physics makes PINNs more than just function approximators
+
+> *PINNs represent a paradigm shift in scientific computing, offering a powerful bridge between data-driven and physics-based modeling.*
+
+
 
 ## 7. Advanced Topics and Future Directions
 
