@@ -274,7 +274,6 @@ graph TD
 
 ---
 
-## 📈 Visual Results Gallery
 
 ### 🎨 **13 Comprehensive Visualizations**
 
@@ -283,78 +282,64 @@ graph TD
 <table>
 <tr>
 <td align="center" width="33%">
-
-**🔴 GATA-1 Dynamics**
-<br>*Time evolution comparison*
-<br>`gata1_case1_comparison.png`
-
+<img src="results/case1/gata1_case1_comparison.png" width="100%"><br>
+<strong>🔴 GATA-1 Dynamics</strong><br>
+<em>Time evolution comparison</em>
 </td>
 <td align="center" width="33%">
-
-**🔵 PU.1 Dynamics** 
-<br>*Transcription factor trajectories*
-<br>`pu1_case1_comparison.png`
-
+<img src="results/case1/pu1_case1_comparison.png" width="100%"><br>
+<strong>🔵 PU.1 Dynamics</strong><br>
+<em>Transcription factor trajectories</em>
 </td>
 <td align="center" width="33%">
-
-**📊 MSE Analysis**
-<br>*Method accuracy comparison*
-<br>`mse_comparison_gata1.png`
-
+<img src="results/both/mse_comparison_gata1.png" width="100%"><br>
+<strong>📊 MSE Analysis</strong><br>
+<em>Method accuracy comparison</em>
 </td>
 </tr>
+
 <tr>
 <td align="center" width="33%">
-
-**⏱️ Performance Timing**
-<br>*Computational efficiency*
-<br>`computation_time_comparison.png`
-
+<img src="results/both/computation_time_comparison.png" width="100%"><br>
+<strong>⏱️ Performance Timing</strong><br>
+<em>Computational efficiency</em>
 </td>
 <td align="center" width="33%">
-
-**📈 R² Correlation**
-<br>*Goodness of fit analysis*
-<br>`r2_comparison_gata1.png`
-
+<img src="results/both/r2_comparison_gata1.png" width="100%"><br>
+<strong>📈 R² Correlation</strong><br>
+<em>Goodness of fit analysis</em>
 </td>
 <td align="center" width="33%">
-
-**🎯 MAPE Errors**
-<br>*Relative accuracy metrics*
-<br>`mape_comparison.png`
-
+<img src="results/both/mape_comparison.png" width="100%"><br>
+<strong>🎯 MAPE Errors</strong><br>
+<em>Relative accuracy metrics</em>
 </td>
 </tr>
+
 <tr>
 <td align="center" width="33%">
-
-**🔄 Phase Portraits**
-<br>*System dynamics visualization*
-<br>`phase_portrait_comparison.png`
-
+<img src="results/both/phase_portrait_comparison.png" width="100%"><br>
+<strong>🔄 Phase Portraits</strong><br>
+<em>System dynamics visualization</em>
 </td>
 <td align="center" width="33%">
-
-**🤖 PINN Training**
-<br>*Neural network convergence*
-<br>`pinn_training_loss.png`
-
+<img src="results/both/pinn_training_loss.png" width="100%"><br>
+<strong>🤖 PINN Training</strong><br>
+<em>Neural network convergence</em>
 </td>
 <td align="center" width="33%">
-
-**⚡ Speedup Analysis**
-<br>*Performance benchmarking*
-<br>`speedup_comparison.png`
-
+<img src="results/both/speedup_comparison.png" width="100%"><br>
+<strong>⚡ Speedup Analysis</strong><br>
+<em>Performance benchmarking</em>
 </td>
 </tr>
 </table>
 
 </div>
 
-> 💡 **All plots available in the [`results/`](./results/) directory with publication-ready quality**
+> 💡 **All plots are available in the [`results/`](./results/) directory in publication-ready quality**
+
+
 
 ---
 
