@@ -16,7 +16,7 @@ We analyze the dynamic interaction between transcription factors **PU.1** and **
 ## 📄 Full Extended Report
 
 📘 **Looking for all the mathematical derivations, biological background, and in-depth analysis?**
-👉 **[Read the Full Report Here → `Untitled-1.md`](./Untitled-1.md)**
+👉 **[Read the Full Report Here → `Full Extended Version.md`](./report/Full_Extended_version.md)**
 
 This markdown document includes:
 
