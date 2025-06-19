@@ -1,101 +1,138 @@
-# Stem Cell Differentiation: Numerical and Machine Learning Methods for Differential Equations in Biomedical Engineering
-
-## Abstract
-
-This project explores the modeling of gene regulatory networks involved in stem cell differentiation through a system of nonlinear ordinary differential equations (ODEs) describing the interaction between the transcription factors PU.1 and GATA-1. To solve this system, two numerical approaches—the trapezoidal rule and Radau method—are used to capture the system's dynamics with stability and precision. Additionally, a machine learning model based on Physics-Informed Neural Networks (PINNs) is implemented using PyTorch to provide a data-driven solution framework that embeds the ODE structure directly into the learning process. By comparing the numerical and machine learning results, we assess the strengths and limitations of each approach. The numerical methods demonstrate higher accuracy and computational efficiency, while the PINNs model shows potential in learning system behavior from limited data. This comparative study highlights the complementary nature of traditional solvers and neural ODE models, offering insight into future hybrid methods for modeling biological systems.
-
-**Keywords:** Stem Cells, PINNs, ODE Model, Gene Regulatory Networks, Transcription Factors
+# 🧬 Stem Cell Differentiation: Numerical and Machine Learning Methods for Differential Equations in Biomedical Engineering
 
 ---
 
-## 1. Introduction to the Problem
+## 📋 Abstract
+
+> **Exploring the intersection of biology, mathematics, and artificial intelligence**
+
+This project explores the modeling of gene regulatory networks involved in stem cell differentiation through a system of nonlinear ordinary differential equations (ODEs) describing the interaction between the transcription factors **PU.1** and **GATA-1**. 
+
+**Key Approaches:**
+- 🔢 **Numerical Methods**: Trapezoidal rule and Radau method for stability and precision
+- 🤖 **Machine Learning**: Physics-Informed Neural Networks (PINNs) using PyTorch
+- 📊 **Comparative Analysis**: Traditional solvers vs. neural ODE models
+
+The numerical methods demonstrate higher accuracy and computational efficiency, while the PINNs model shows potential in learning system behavior from limited data. This comparative study highlights the complementary nature of traditional solvers and neural ODE models, offering insight into future hybrid methods for modeling biological systems.
+
+**🔑 Keywords:** `Stem Cells` • `PINNs` • `ODE Model` • `Gene Regulatory Networks` • `Transcription Factors`
+
+---
+
+## 1. 🌱 Introduction to the Problem
 
 ### 1.1 Biological Background
 
 Stem cells represent one of the most fascinating areas of modern biology due to their unique properties:
 
-- **Self-renewal**: The ability to divide and produce identical copies of themselves
-- **Pluripotency**: The capacity to differentiate into various specialized cell types
-- **Therapeutic potential**: Applications in regenerative medicine and disease treatment
+| Property | Description | Impact |
+|----------|-------------|--------|
+| **🔄 Self-renewal** | Ability to divide and produce identical copies | Maintains stem cell population |
+| **🌟 Pluripotency** | Capacity to differentiate into various specialized cell types | Enables tissue regeneration |
+| **💊 Therapeutic potential** | Applications in regenerative medicine and disease treatment | Future medical breakthroughs |
 
-The differentiation process is not random but follows carefully orchestrated molecular programs controlled by transcription factors—proteins that regulate gene expression by binding to specific DNA sequences.
+The differentiation process is not random but follows carefully orchestrated molecular programs controlled by **transcription factors**—proteins that regulate gene expression by binding to specific DNA sequences.
 
 ### 1.2 The PU.1-GATA-1 System
 
 In hematopoietic (blood cell) development, two transcription factors play pivotal roles:
 
-- **PU.1**: Promotes myeloid lineage (white blood cells like neutrophils, macrophages)
-- **GATA-1**: Promotes erythroid lineage (red blood cells and megakaryocytes)
+```mermaid
+graph TD
+    A[Stem Cell] --> B{PU.1 vs GATA-1}
+    B -->|PU.1 dominates| C[Myeloid Lineage]
+    B -->|GATA-1 dominates| D[Erythroid Lineage]
+    C --> E[White Blood Cells<br/>• Neutrophils<br/>• Macrophages]
+    D --> F[Red Blood Cells<br/>• Erythrocytes<br/>• Megakaryocytes]
+```
 
-These factors exhibit a fascinating biological phenomenon called **mutual inhibition**—when one is highly expressed, it suppresses the other. This creates a "toggle switch" mechanism that ensures cells commit to one specific fate rather than attempting to become multiple cell types simultaneously.
+**🔴 PU.1**: Promotes myeloid lineage (white blood cells like neutrophils, macrophages)  
+**🟡 GATA-1**: Promotes erythroid lineage (red blood cells and megakaryocytes)
+
+These factors exhibit a fascinating biological phenomenon called **mutual inhibition**—when one is highly expressed, it suppresses the other. This creates a "toggle switch" mechanism that ensures cells commit to one specific fate.
 
 ### 1.3 Mathematical Modeling Approach
 
-To understand this complex biological system, we employ a mathematical model consisting of:
-- A system of coupled nonlinear ordinary differential equations (ODEs)
-- Two dependent variables: concentrations of PU.1 and GATA-1
-- Time as the independent variable
-- Multiple numerical and machine learning solution approaches
+Our mathematical framework consists of:
 
-This mathematical framework allows us to:
-- Predict how gene expression changes over time
-- Understand the conditions that favor different cell fates
-- Test hypotheses about regulatory mechanisms
-- Design potential therapeutic interventions
+- 📐 **System of coupled nonlinear ODEs**
+- 📊 **Two dependent variables**: PU.1 and GATA-1 concentrations
+- ⏰ **Time as independent variable**
+- 🔬 **Multiple solution approaches**: Numerical and ML methods
+
+**Why Mathematical Modeling?**
+- ✅ Predict gene expression changes over time
+- ✅ Understand conditions favoring different cell fates
+- ✅ Test hypotheses about regulatory mechanisms
+- ✅ Design potential therapeutic interventions
 
 ---
 
-## 2. Literature Review
+## 2. 📚 Literature Review
 
 ### 2.1 Mathematical Modeling in Biology
 
-Mathematical modeling using ODEs has become an indispensable tool in systems biology, particularly for understanding gene regulatory networks. The power of these models lies in their ability to:
+Mathematical modeling using ODEs has become an indispensable tool in systems biology:
 
-- **Capture nonlinear dynamics**: Biological systems often exhibit threshold effects, feedback loops, and bistability
-- **Integrate multiple interactions**: Account for self-regulation, mutual inhibition, and external signals
-- **Make quantitative predictions**: Move beyond qualitative descriptions to precise forecasts
+#### **Advantages of ODE Models:**
+- **🌊 Capture nonlinear dynamics**: Threshold effects, feedback loops, bistability
+- **🔗 Integrate multiple interactions**: Self-regulation, mutual inhibition, external signals
+- **📈 Make quantitative predictions**: Move beyond qualitative to precise forecasts
 
 ### 2.2 The PU.1-GATA-1 Model Development
 
-The foundational work by Duff et al. (2012) established the mathematical framework we use in this study. Their model incorporates several key biological features:
+> **Foundation**: Duff et al. (2012)
 
-- **Bistability**: The system can exist in two stable states corresponding to different cell fates
-- **Hysteresis**: The path of differentiation depends on the starting conditions and history
-- **Robustness**: Small perturbations don't easily shift the system between states
+The mathematical framework incorporates key biological features:
+
+| Feature | Description | Biological Significance |
+|---------|-------------|------------------------|
+| **⚖️ Bistability** | Two stable states for different cell fates | Ensures cell commitment |
+| **🔄 Hysteresis** | Path depends on starting conditions | History matters in development |
+| **🛡️ Robustness** | Small perturbations don't easily shift states | Stable differentiation |
 
 ### 2.3 Numerical Methods for Biological ODEs
 
-Traditional numerical approaches for solving biological ODEs include:
+#### **Traditional Approaches:**
 
-- **Explicit methods** (e.g., Runge-Kutta): Fast but potentially unstable for stiff systems
-- **Implicit methods** (e.g., Backward Euler, BDF): More stable but computationally expensive
-- **Adaptive methods**: Automatically adjust step size based on solution behavior
+```
+🚀 Explicit Methods (e.g., Runge-Kutta)
+   ├── ✅ Fast computation
+   └── ⚠️ Potentially unstable for stiff systems
 
-The challenge in biological systems often comes from **stiffness**—when the system contains both fast and slow dynamics, requiring very small time steps for stability.
+🐌 Implicit Methods (e.g., Backward Euler, BDF)
+   ├── ✅ More stable
+   └── ⚠️ Computationally expensive
 
-### 2.4 Machine Learning Approaches: Physics-Informed Neural Networks
+🔄 Adaptive Methods
+   ├── ✅ Auto-adjust step size
+   └── ✅ Balance accuracy and efficiency
+```
 
-Recent advances in machine learning have introduced Physics-Informed Neural Networks (PINNs), which offer several advantages:
+**Challenge**: **Stiffness** in biological systems—fast and slow dynamics requiring very small time steps.
 
-- **Data efficiency**: Can learn from limited experimental data
-- **Physics constraints**: Ensure solutions obey known physical laws
-- **Continuous solutions**: Provide smooth, differentiable approximations
-- **Uncertainty quantification**: Can estimate confidence in predictions
+### 2.4 Machine Learning: Physics-Informed Neural Networks
 
-However, PINNs also face challenges:
-- **Computational cost**: Training can be expensive compared to traditional solvers
-- **Convergence issues**: Complex loss landscapes can make optimization difficult
-- **Parameter sensitivity**: Performance highly dependent on hyperparameter choices
+#### **🤖 PINNs Advantages:**
+- **📊 Data efficiency**: Learn from limited experimental data
+- **⚖️ Physics constraints**: Solutions obey known physical laws
+- **📈 Continuous solutions**: Smooth, differentiable approximations
+- **🎯 Uncertainty quantification**: Estimate prediction confidence
+
+#### **⚠️ PINNs Challenges:**
+- **💰 Computational cost**: Expensive training vs. traditional solvers
+- **🌀 Convergence issues**: Complex loss landscapes
+- **🎛️ Parameter sensitivity**: Hyperparameter dependent performance
 
 ---
 
-## 3. ODE Model Explanation
+## 3. 🧮 ODE Model Explanation
 
 ### 3.1 Mathematical Formulation
 
-The system of ODEs describing the PU.1-GATA-1 interaction is:
+The system describing PU.1-GATA-1 interaction:
 
-```
+```mathematica
 d[G]/dt = (a₁[G]ⁿ)/(θₐ₁ⁿ + [G]ⁿ) + (b₁θᵦ₁ᵐ)/(θᵦ₁ᵐ + [G]ᵐ[P]ᵐ) - k₁[G]   (1a)
 
 d[P]/dt = (a₂[P]ⁿ)/(θₐ₂ⁿ + [P]ⁿ) + (b₂θᵦ₂ᵐ)/(θᵦ₂ᵐ + [G]ᵐ[P]ᵐ) - k₂[P]   (1b)
@@ -103,75 +140,82 @@ d[P]/dt = (a₂[P]ⁿ)/(θₐ₂ⁿ + [P]ⁿ) + (b₂θᵦ₂ᵐ)/(θᵦ₂ᵐ +
 
 ### 3.2 Variables and Parameters
 
-**Variables:**
-- `[G]`: Normalized expression level of GATA-1
-- `[P]`: Normalized expression level of PU.1  
-- `t`: Time
+#### **🔬 Variables:**
+| Symbol | Description |
+|--------|-------------|
+| `[G]` | Normalized GATA-1 expression level |
+| `[P]` | Normalized PU.1 expression level |
+| `t` | Time |
 
-**Parameters:**
-- `a₁, a₂`: Self-activation rates (how strongly each gene promotes itself)
-- `b₁, b₂`: External regulation coefficients
-- `θₐ₁, θₐ₂, θᵦ₁, θᵦ₂`: Threshold parameters for activation/inhibition
-- `k₁, k₂`: Degradation rates (natural decay of proteins)
-- `n, m`: Hill coefficients (determine steepness of regulatory responses)
+#### **⚙️ Parameters:**
+| Parameter | Description | Biological Role |
+|-----------|-------------|-----------------|
+| `a₁, a₂` | Self-activation rates | Gene self-promotion strength |
+| `b₁, b₂` | External regulation coefficients | Outside influence |
+| `θₐ₁, θₐ₂, θᵦ₁, θᵦ₂` | Threshold parameters | Activation/inhibition thresholds |
+| `k₁, k₂` | Degradation rates | Natural protein decay |
+| `n, m` | Hill coefficients | Regulatory response steepness |
 
 ### 3.3 Biological Interpretation of Each Term
 
-#### Term 1: Self-Activation
-```
+#### **🔄 Term 1: Self-Activation**
+```mathematica
 (aᵢ[X]ⁿ)/(θₐᵢⁿ + [X]ⁿ)
 ```
 
-This Hill function models **positive feedback**:
-- When gene expression is low, self-activation is weak
-- Once expression crosses a threshold, it rapidly increases its own production
-- The Hill coefficient `n` determines how sharp this transition is
-- **Biological significance**: Creates commitment to a cell fate—once started, the process accelerates
+**Hill function modeling positive feedback:**
+- 📉 Low expression → weak self-activation
+- 📈 Threshold crossing → rapid self-production increase
+- 🎯 Hill coefficient `n` → transition sharpness
+- 🧬 **Biology**: Creates cell fate commitment—acceleration once started
 
-#### Term 2: Mutual Inhibition
-```
+#### **⚔️ Term 2: Mutual Inhibition**
+```mathematica
 (bᵢθᵦᵢᵐ)/(θᵦᵢᵐ + [G]ᵐ[P]ᵐ)
 ```
 
-This term captures **negative feedback** between the two genes:
-- High levels of both genes together reduce the activation
-- When one gene dominates, it suppresses the other
-- **Biological significance**: Ensures mutually exclusive cell fates—cells become either erythroid OR myeloid, not both
+**Negative feedback between genes:**
+- 🔴 High both genes → reduced activation
+- ⚖️ One dominates → suppresses the other
+- 🧬 **Biology**: Ensures mutually exclusive fates—erythroid OR myeloid, not both
 
-#### Term 3: Degradation
-```
+#### **💀 Term 3: Degradation**
+```mathematica
 -kᵢ[X]
 ```
 
-Simple linear decay:
-- Proteins are constantly being degraded by cellular machinery
-- Without active production, expression levels return to zero
-- **Biological significance**: Provides stability and allows for dynamic responses to changing conditions
+**Simple linear decay:**
+- 🔄 Constant protein degradation by cellular machinery
+- 📉 Without production → expression returns to zero
+- 🧬 **Biology**: Provides stability and dynamic response capability
 
 ### 3.4 Parameter Cases Studied
 
-#### Case 1: Symmetric Activation (a₁ = 1, a₂ = 1)
-- **Biological context**: Represents a balanced progenitor state
-- **Expected behavior**: Bistable system with equal preference for both fates
-- **Clinical relevance**: Models healthy stem cell populations
+#### **🟢 Case 1: Symmetric Activation** `(a₁ = 1, a₂ = 1)`
+- **🧬 Context**: Balanced progenitor state
+- **📊 Behavior**: Bistable system, equal fate preference
+- **🏥 Relevance**: Healthy stem cell populations
 
-#### Case 2: Asymmetric Activation (a₁ = 5, a₂ = 10)
-- **Biological context**: PU.1 has stronger self-activation than GATA-1
-- **Expected behavior**: System biased toward myeloid differentiation
-- **Clinical relevance**: Models conditions where myeloid development is favored (e.g., certain leukemias)
+#### **🔵 Case 2: Asymmetric Activation** `(a₁ = 5, a₂ = 10)`
+- **🧬 Context**: PU.1 stronger self-activation than GATA-1
+- **📊 Behavior**: System biased toward myeloid differentiation
+- **🏥 Relevance**: Myeloid-favored conditions (certain leukemias)
 
 ### 3.5 System Properties
 
-#### Multistability
-The nonlinear structure creates multiple stable equilibria:
-- **Low-low state**: Both genes weakly expressed (progenitor state)
-- **High G, low P**: GATA-1 dominates (erythroid fate)
-- **Low G, high P**: PU.1 dominates (myeloid fate)
+#### **🔀 Multistability**
+Multiple stable equilibria:
 
-#### Dynamical Behavior
-- **Basin of attraction**: Initial conditions determine final fate
-- **Switching dynamics**: Rare transitions between stable states
-- **Noise sensitivity**: Random fluctuations can influence fate decisions
+```
+📍 Low-low state: Both genes weakly expressed (progenitor)
+📍 High G, low P: GATA-1 dominates (erythroid fate)
+📍 Low G, high P: PU.1 dominates (myeloid fate)
+```
+
+#### **⚡ Dynamical Behavior**
+- **🎯 Basin of attraction**: Initial conditions → final fate
+- **🔄 Switching dynamics**: Rare transitions between stable states
+- **🎲 Noise sensitivity**: Random fluctuations influence fate decisions
 
 ---
 
