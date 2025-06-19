@@ -40,24 +40,27 @@ This markdown document includes:
 ## 📂 Repository Structure
 
 ```text
-📁 stemcell-differentiation/
-├── notebooks/
-│   ├── numerical_methods.ipynb        # Trapezoidal and Radau implementations
-│   ├── pinn_case1_training.ipynb      # PINN model for symmetric case (a1 = a2 = 1)
-│   ├── pinn_case2_training.ipynb      # PINN model for asymmetric case (a1 = 5, a2 = 10)
+📁 stem-cell-pinns-project/
+├── notebooks and codes/
+│   ├── LSODA.py                       # LSODA numerical solver (Python)
+│   ├── LSODES.r                       # LSODES solver implementation (R)
+│   ├── PINNS.ipynb                    # PINN training 
+│   ├── PINNS VS Numerical.ipynb      # Comparison between PINNs and numerical solvers
+│   ├── Radau.py                       # Radau method implementation
+│   ├── Radau_as_module.py            # Modular Radau solver
+│   ├── Trapzoidal.py                 # Trapezoidal solver implementation
+│   └── Trapzoidal_as_module.py       # Modular Trapezoidal method
 │
-├── src/
-│   ├── pinn_model.py                  # PINN architecture and loss functions
-│   ├── ode_systems.py                 # Biological ODE definitions
-│   ├── radau_solver.py                # Custom Radau IIA implementation
-│   └── trapezoidal_solver.py          # Fixed-point iterative trapezoidal solver
+├── report/
+│   └── Full_Extended_version.md      # 📚 Complete project write-up and analysis
 │
 ├── results/
-│   ├── figures/                       # GATA-1 / PU.1 time-course plots
-│   └── metrics/                       # Quantitative benchmarks
+│   ├── both/                         # Comparative plots for both cases
+│   ├── case1/                        # Figures for Case 1 (a1 = a2 = 1)
+│   └── case2/                        # Figures for Case 2 (a1 = 5, a2 = 10)
 │
-├── README.md                          # 📘 This file
-└── Untitled-1.md                      # 📚 Full detailed write-up
+├── README.md                         # 📘 Project overview and instructions
+└── LICENSE                           # 📄 Licensing information
 ```
 
 ---
