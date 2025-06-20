@@ -99,7 +99,9 @@ dP/dt = a₁G²/(1+G²) - P     (PU.1 dynamics)
 │   └── 📐 Trapzoidal.py             # Classical explicit method
 │
 ├── 📚 report/
-│   └── 📖 Full_Extended_version.md   # Complete analysis (50+ pages)
+│   └── 📖 Full_Extended_version.md   # Complete analysis (pages)
+│   └── 📖 Numerical_Report_Team_4.pdf   # Main report (4 pages)
+│   └── 📖 Numerical_Report_Team_4(Latex_Version).tex   # Main report (Latex-Code)
 │
 ├── 📊 results/                       # Generated visualizations
 │   ├── 🔄 both/                     # Cross-method comparisons
