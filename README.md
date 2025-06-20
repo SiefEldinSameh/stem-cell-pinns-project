@@ -11,7 +11,7 @@
 
 *Comparing Classical Numerical Solvers with Physics-Informed Neural Networks*
 
-[📘 Full Report](./report/Full_Extended_version.md) • [🚀 Quick Start](#-quick-start) • [📊 Results](#-key-results) • [🤝 Contributing](#-contributing)
+[📘Report](./report/Numerical_Report_Team_4.pdf) • [📘 Extended Report](./report/Full_Extended_version.md) • [🚀 Quick Start](#-quick-start) • [📊 Results](#-key-results) • [🤝 Contributing](#-contributing)
 
 </div>
 
