@@ -1,0 +1,771 @@
+
+
+\documentclass[journal]{IEEEtran}
+
+% *** CITATION PACKAGES ***
+\usepackage[style=ieee]{biblatex} 
+\bibliography{example_bib.bib}    %your file created using JabRef
+
+% *** MATH PACKAGES ***
+\usepackage{amsmath}
+
+% *** PDF, URL AND HYPERLINK PACKAGES ***
+\usepackage{url}
+% correct bad hyphenation here
+\hyphenation{op-tical net-works semi-conduc-tor}
+\usepackage{graphicx}  %needed to include png, eps figures
+\usepackage{float}  % used to fix location of images i.e.\begin{figure}[H]
+\usepackage{changepage}
+
+
+\begin{document}
+
+% paper title
+\title{Stem Cell Differentiation\\ \small{Numerical and Machine Learning Methods for Differential Equations in Biomedical Engineering}}
+
+% author names 
+    \author{Seif Sameh $|$ 91240371,
+        Fahd Ahmed $|$ 91240561,
+        Khadija Zakaria $|$ 91240965,
+        Mona Elkhouly $|$ 91241075,
+        Zaid Nassif $|$ 91240323,
+        Mohamed Elnefary $|$ 91240675,
+        Aya Emad $|$ 91240199,
+        Ahmed Farahat $|$ 91240108,
+        Hana Gamal $|$ 91240843,
+        Manar Saed $|$ 91240785,
+        Ahmed Saker $|$ 91240116,
+        }% <-this % stops a space
+        
+% The report headers
+\markboth{SBEG108 Numerical Methods in BME}%do not delete next lines
+{Shell \MakeLowercase{\textit{et al.}}: Bare Demo of IEEEtran.cls for IEEE Journals}
+
+% make the title area
+\maketitle
+
+% As a general rule, do not put math, special symbols or citations
+% in the abstract or keywords.
+\begin{abstract}
+This project explores the modeling of gene regulatory networks involved in stem cell differentiation through a system of nonlinear ordinary differential equations (ODEs)
+describing the interaction between the transcription factors PU.1 and GATA-1. To solve this system, two numerical approaches
+,the trapezoidal rule and Radau method, are used to capture the system’s dynamics with stability and precision. Additionally, a machine learning model based on Physics Informed Neural Networks (PINNs) is implemented using PyTorch to provide a data-
+driven solution framework that embeds the ODE structure directly into the learning process. By comparing the numerical and machine learning results, we assess the strengths and limitations of each approach. The numerical methods demonstrate higher accuracy and computational efficiency, while the PINNs model
+shows potential in learning system behavior from limited data. This comparative study highlights the complementary nature of
+traditional solvers and neural ODE models, offering insight into future hybrid methods for modeling biological systems.
+
+
+\end{abstract}
+
+\begin{IEEEkeywords}
+Stem Cells,PINNs,ODE Model.
+\end{IEEEkeywords}
+
+
+% Here we have the typical use of a "W" for an initial drop letter
+% and "RITE" in caps to complete the first word.
+% You must have at least 2 lines in the paragraph with the drop letter
+% (should never be an issue)
+\section{Introduction to The Problem}
+\IEEEPARstart{S}{tem} cells have the ability to continuously divide and differentiate into various cell types, such as muscle or bone. They begin from an initial state and progress through several stages before becoming fully specialized. A key stage in this process is the \textit{progenitor state}, where cells are not yet committed but retain the potential to become different types. The final fate is determined during this stage, regulated by proteins known as \textit{transcription factors}.
+
+Among these, \textbf{PU.1} and \textbf{GATA-1} are two critical transcription factors that guide the differentiation of specific blood cell lineages. In early progenitor cells, both genes are expressed at low levels. Understanding their interaction is essential, as it dictates the developmental path the cell will follow and the type of cell it will ultimately become. Such insights are key to advancing stem cell-based therapies.
+
+To study this interaction, a \textbf{2 × 2} (two equations in two unknowns) nonlinear ODE system is used to model the gene expression dynamics of PU.1 and GATA-1 over time. The concentrations of these two transcription factors are the dependent variables, with time as the independent variable. Both numerical solvers and machine learning approaches are applied to analyze how expression levels evolve and influence cell fate.
+
+\section{Literature Review}
+Mathematical modeling with ODEs is a powerful approach to capturing complex biological processes like gene regulation and cell differentiation. A notable example is the PU.1–GATA-1 system [2], which models the mutual inhibition between two key transcription factors that influence hematopoietic stem cell fate. This framework illustrates bistability which is a critical feature in lineage commitment and helps simplify the understanding of gene regulatory dynamics.
+
+To simulate such models, numerical methods like Runge-Kutta and implicit solvers are often used due to their robustness in handling non-linear systems without closed-form solutions. However, solving these equations under sparse or noisy biological data remains challenging. Work by Sarabian et al. [3] highlights the importance of integrating parameter estimation and sensitivity analysis to improve model accuracy under real-world conditions.
+
+Recently, machine learning techniques like PINNs [1] have emerged as data-driven alternatives that embed the structure of ODEs into the training process. These approaches can perform well even with limited data, but may struggle with stiff systems or rapidly changing dynamics those are areas where traditional numerical solvers still perform better.
+
+Overall, current research reflects a balance between classical numerical reliability and the adaptability of machine learning. For complex biological networks such as the PU.1–GATA-1 system, combining these methods may lead to more effective modeling of stem cell behavior and differentiation.
+
+\\
+\\
+\section{ODE Model Explanation}
+
+To study hematopoietic stem cell differentiation, we use a nonlinear ODE model from the literature that captures the feedback between transcription factors GATA-1 and PU.1, whose self-activation and mutual inhibition guide cell fate decisions.
+
+The ODE system is defined as follows:
+
+\begin{equation}
+\frac{d[G]}{dt} = \frac{a_1 [G]^n}{\theta_{a1}^n + [G]^n} + \frac{b_1 \theta_{b1}^m}{\theta_{b1}^m + [G]^m [P]^m} - k_1 [G]
+\tag{1a}
+\end{equation}
+
+\begin{equation}
+\frac{d[P]}{dt} = \frac{a_2 [P]^n}{\theta_{a2}^n + [P]^n} + \frac{b_2 \theta_{b2}^m}{\theta_{b2}^m + [G]^m [P]^m} - k_2 [P]
+\tag{2a}
+\end{equation}
+
+\noindent
+\textbf{Variables:}
+\begin{itemize}
+    \item $[G]$: Normalized expression level of gene \textbf{GATA-1}
+    \item $[P]$: Normalized expression level of gene \textbf{PU.1}
+    \item $t$: Time
+\end{itemize}
+
+\noindent
+\textbf{Parameters:}
+\begin{itemize}
+    \item $a_1, a_2$: Self-activation rates for GATA-1 and PU.1
+    \item $b_1, b_2$: External regulation coefficients
+    \item $\theta_{a1}, \theta_{a2}, \theta_{b1}, \theta_{b2}$: Activation/inhibition thresholds
+    \item $k_1, k_2$: Degradation rates
+    \item $n, m$: Hill coefficients determining nonlinearity
+\end{itemize}
+
+\textbf{Cases:}
+\begin{itemize}
+    \item \textbf{Case 1: Symmetric Activation ($a_1 = 1$, $a_2 = 1$)} \\
+    A balanced setup where GATA-1 and PU.1 equally self-activate. The system shows minimal activity and quickly stabilizes, resembling a dormant or undifferentiated state.
+
+    \item \textbf{Case 2: Asymmetric Activation ($a_1 = 5$, $a_2 = 10$)} \\
+PU.1 strongly dominates, creating a bias toward the myeloid fate. Simulations show rapid early growth in both genes, then gradual stabilization. This case introduces stiffness and challenges solver performance.
+\end{itemize}
+
+These cases illustrate how parameter changes influence stem cell fate decisions.
+
+
+\\
+\\
+
+\section{Numerical Methods Implementations}
+
+\subsection{1. Using \texttt{deSolve} Package (Base Case)}
+
+To numerically solve the ODE system, the \texttt{deSolve} package in R is used, specifically the \texttt{lsodes} solver, suitable for stiff systems with components evolving at different time scales.
+
+\texttt{LSODES} (Livermore Solver for ODEs with Sparse Matrices) is an implicit, adaptive step size solver based on Backward Differentiation Formulas (BDF), offering strong stability for stiff problems. The simplest BDF, the Backward Euler method, is:
+
+\begin{equation}
+\frac{y_n - y_{n-1}}{\Delta t} = f(t_n, y_n)
+\end{equation}
+
+It efficiently handles sparse Jacobian matrices, optimizing performance for large systems.
+
+
+
+
+\subsubsection*{\textbf{a. Work Flow}} \hfill 
+
+\underline{\textit{Implementation Steps:}}
+\begin{enumerate}
+    \item Define the system of ODEs in a custom function (\texttt{stem\_1}).
+    \item Initialize system parameters and initial conditions: \( G(0) = P(0) = 1 \), \( n = 4 \), \( m = 1 \).
+    \item Call \texttt{lsodes()} to integrate the system over time.
+    \item Extract and analyze the results for \( G(t) \), \( P(t) \), and their derivatives \( \frac{dG}{dt} \), \( \frac{dP}{dt} \).
+\end{enumerate}
+
+\vspace{1em}
+
+\subsubsection*{\textbf{b. Simulation Results}} \hfill
+
+\underline{\textit{Case 1: Symmetric Activation (shown in fig 1)}}
+\begin{itemize}
+    \item Parameters: \( n = 4 \), \( m = 1 \)
+    \item Number of calls to \texttt{stem\_1}: 89
+    \item Behavior: Rapid stabilization to equilibrium
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case1desolver.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=1 using desolve pakage. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+\begin{table}[H]
+\centering
+\caption{Selected Values for Case 1}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$t$ & $G(t)$ & $P(t)$ & $dG/dt$ & $dP/dt$ \\
+\midrule
+0.00 & 1.000 & 1.000 & 0.007 & 0.007 \\
+1.00 & 1.004 & 1.004 & 0.003 & 0.003 \\
+3.00 & 1.007 & 1.007 & 0.000 & 0.000 \\
+5.00 & 1.007 & 1.007 & 0.000 & 0.000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+
+\textbf{Interpretation:} The system reaches a stable state early, with negligible changes in $G$ and $P$. This may represent a biologically dormant state.
+
+
+
+
+\underline{\textit{Case 2: Asymmetric Activation (shown in fig 2)}}
+\begin{itemize}
+    \item Parameters: \( n = 4 \), \( m = 1 \)
+    \item Number of calls to \texttt{stem\_1}: 192
+    \item Behavior: Rapid growth followed by gradual saturation
+\end{itemize}
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case2desolver.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=2 using desolve package. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Selected Values for Case 2}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+$t$ & $G(t)$ & $P(t)$ & $dG/dt$ & $dP/dt$ \\
+\midrule
+0.00 & 1.000 & 1.000 & 3.771 & 8.477 \\
+1.00 & 3.521 & 6.685 & 1.480 & 3.318 \\
+3.00 & 4.801 & 9.553 & 0.200 & 0.449 \\
+5.00 & 4.974 & 9.941 & 0.027 & 0.061 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Interpretation:} The system initially exhibits dynamic behavior, suggesting gene and protein activation or differentiation processes. Eventually, the system stabilizes.
+
+\vspace{1em}
+
+
+\subsubsection*{\textbf{c. Strengths and Limitations}} \hfill
+
+\underline{\textit{Strengths:}}
+\begin{itemize}
+    \item Efficient handling of stiff systems using implicit methods.
+    \item High accuracy through adaptive step size and error control.
+    \item Suitable for biological systems with different time scales.
+\end{itemize}
+
+\vspace{0.5em}
+
+\underline{\textit{Limitations:}}
+\begin{itemize}
+    \item Higher computational cost in dynamic scenarios.
+    \item Solution quality depends on tolerance and parameter selection.
+\end{itemize}
+
+\subsection*{\textbf{2. Trapezoidal Method}}
+
+To improve accuracy over the basic Euler method, we implemented the trapezoidal rule for solving the nonlinear ODE system. The Euler approximation:
+\[
+\int_{t_i}^{t_{i+1}} f(t, y(t)) \, dt \approx h \cdot f(t_i, y_i),
+\]
+is replaced by the more accurate trapezoidal rule:
+\[
+y_{n+1} = y_n + \frac{h}{2} \left[ f(t_n, y_n) + f(t_{n+1}, y_{n+1}) \right],
+\]
+which is implicit in \( y_{n+1} \) and requires fixed-point iteration at each time step.
+
+\vspace{1em}
+
+\subsubsection*{\textbf{a. Work Flow}} \hfill 
+
+\underline{\textit{Implementation Steps:}}
+\begin{itemize}
+    \item \textbf{Initialize:} Set time step size \( h = 0.2 \), iteration tolerance \( 10^{-6} \), and a maximum of 100 iterations per step.
+    \item \textbf{Initial Guess:} Predict \( y_{n+1} \) using Euler’s method:
+    \[
+    y_{\text{guess}} = y_n + h \cdot f(t_n, y_n)
+    \]
+    \item \textbf{Fixed-Point Iteration:}
+    \begin{enumerate}
+        \item Evaluate: \( f_{\text{guess}} = f(t_n + h, y_{\text{guess}}) \)
+        \item Compute:
+        \[
+        y_{\text{next}} = y_n + \frac{h}{2} [f(t_n, y_n) + f_{\text{guess}}]
+        \]
+        \item Convergence check: If \( \|y_{\text{next}} - y_{\text{guess}}\| < 10^{-6} \), accept; otherwise, repeat with updated guess.
+    \end{enumerate}
+    \item \textbf{Update:} Set \( y_{n+1} = y_{\text{next}} \), increment \( t \), and continue to final time.
+\end{itemize}
+\vspace{0.5em}
+
+\underline{\textit{Metrics Recorded:}}
+\begin{itemize}
+    \item Number of function calls (ncalls)
+    \item Total computation time
+\end{itemize}
+\vspace{1em}
+
+\subsubsection*{\textbf{b. Simulation Results}} \hfill 
+
+The method was applied to both symmetric and asymmetric activation cases.
+
+\underline{\textit{Case 1: Symmetric Activation (shown in fig 3)}}
+\begin{itemize}
+    \item The system is balanced with low dynamic behavior.
+    \item The solution rapidly converges to equilibrium.
+\end{itemize}
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case1Trapezoidal.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=1 using trapezodial method. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\textbf{Interpretation:} Minimal changes in G and P reflect a stable undifferentiated cell state.
+
+\vspace{1em}
+
+\underline{\textit{Case 2: Asymmetric Activation (shown in fig 4)}}
+\begin{itemize}
+    \item PU.1 dominates, driving the system away from balance.
+    \item Initial sharp increase in G and P followed by gradual stabilization.
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case2Trapezoidal.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=2 using trapezodial method. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\textbf{Interpretation:} The simulation reflects strong self-activation of PU.1 pushing the system toward a myeloid-biased fate.
+
+\vspace{1em}
+
+\subsubsection*{\textbf{c. Strengths and Limitations}} \hfill
+
+\underline{\textit{Strengths:}}
+\begin{itemize}
+    \item Second-order accuracy improves precision over Euler’s method.
+    \item Good trade-off between computational cost and accuracy.
+    \item More stable than explicit solvers for moderately stiff problems.
+\end{itemize}
+
+\vspace{0.5em}
+
+\underline{\textit{Limitations:}}
+\begin{itemize}
+    \item Requires iterative solving due to its implicit nature.
+    \item Convergence depends on initial guess and step size.
+\end{itemize}
+
+
+\end{adjustwidth}
+\subsection*{\textbf{3. Radau Method}}
+
+
+In Case 2 of the stem cell model, the ODE system exhibits stiff behavior due to nonlinear terms like \( G^n \), \( G^m P^m \), and parameters such as \( k_1, k_2, \ldots \) operating on different scales. These characteristics make the system unsuitable for explicit solvers and highly sensitive to time step size.
+
+To address this, we used the \texttt{Radau} method which is an implicit Runge-Kutta scheme well-suited for stiff systems. It allows stable integration with large time steps and maintains high accuracy.
+
+\vspace{1em}
+
+\subsubsection*{\textbf{a. Work Flow}} \hfill
+
+\underline{\textit{Implementation Steps:}}
+\begin{itemize}
+    \item \textbf{Initialize:} Choose initial step size based on whether evaluation points (\texttt{t\_eval}) are used:
+
+    \vspace{0.5em}
+    \begin{table}[H]
+    \centering
+    \caption{Initial Step Size Based on Evaluation Conditions}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Condition} & \textbf{Initial Step Size \( h \)} \\
+        \hline
+        Without \texttt{t\_eval} & \( \frac{t_{\text{end}} - t_{\text{start}}}{100} \) \\
+        \hline
+        With \texttt{t\_eval}    & \( \frac{t_{\text{end}} - t_{\text{start}}}{1000} \) \\
+        \hline
+    \end{tabular}
+    \end{table}
+
+    \item \textbf{Set Parameters:} Tolerance = \(10^{-8}\), Max iterations = 50 per time step.
+    \item \textbf{Initial Guess:} Set all stage values \( Y_i = y_n \) for \( i = 1, 2, 3 \) (three-stage method).
+    \item \textbf{Newton Iteration Loop:}
+    \begin{enumerate}
+        \item Evaluate \( f(t + c_i h, Y_i) \) at each stage.
+        \item Compute residuals and Jacobian.
+        \item Solve the linear system to update \( Y_i \), and iterate until convergence.
+    \end{enumerate}
+    \item \textbf{Update Solution:}
+    \[
+    y_{n+1} = y_n + h \sum_{i=1}^{3} b_i f_i
+    \]
+    \item \textbf{Error Estimation and Step Size Control:}
+    \begin{itemize}
+        \item Estimate local error with embedded method.
+        \item Adapt time step \( h \) accordingly.
+    \end{itemize}
+    \item \textbf{Repeat:} Continue stepping until final time \( t = 5 \) is reached.
+\end{itemize}
+
+\vspace{0.5em}
+
+\underline{\textit{Metrics Recorded:}}
+\begin{itemize}
+    \item Number of function evaluations.
+    \item Total computation time.
+\end{itemize}
+
+\vspace{1em}
+
+\subsubsection*{\textbf{b. Simulation Results}} \hfill
+
+\underline{\textit{Case 1: Symmetric Activation (shown in fig 5)}}
+\begin{itemize}
+    \item System stabilized quickly, indicating low dynamic behavior.
+    \item Represents a dormant or undifferentiated biological state.
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case1Radau.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=1 using  Radau method. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+\vspace{0.5em}
+
+\underline{\textit{Case 2: Asymmetric Activation (shown in fig 6)}}
+\begin{itemize}
+    \item PU.1 dominates due to stronger self-activation.
+    \item The system initially grows rapidly, then stabilizes, simulating differentiation toward the myeloid lineage.
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Case2Radau.png}
+\caption{ G(t),P(t),dG/dt,dP/dt for  ncase=2 using Radau method. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+\vspace{1em}
+
+\subsubsection*{\textbf{c. Strengths and Limitations}} \hfill
+
+\underline{\textit{Strengths:}}
+\begin{itemize}
+    \item L-stable and highly accurate (fifth-order) even with large time steps.
+    \item Well-suited for stiff, nonlinear biological systems.
+\end{itemize}
+
+\vspace{0.5em}
+
+\underline{\textit{Limitations:}}
+\begin{itemize}
+    \item Computationally intensive due to Jacobian evaluations and nonlinear solves.
+    \item Fixed-stage structure limits flexibility and lacks automatic stiffness detection.
+    \item No built-in support for event handling (e.g., threshold triggers).
+\end{itemize}
+
+
+
+\end{adjustwidth}
+
+
+
+\section{Machine Learning Implementation}
+
+PINNs were trained to solve the system of ODEs by embedding the physical laws directly into the loss function. Unlike traditional numerical solvers that discretize the time domain, PINNs learn continuous solutions that respect the underlying physics by minimizing the residuals of the differential equations.
+
+\vspace{1em}
+
+\subsubsection*{\textbf{a. Work Flow}} \hfill
+
+\underline{\textit{Network Design (shown in fig 7):}}
+
+\begin{itemize}
+    \item \textbf{Input Layer:} 1 neuron representing time \( t \)
+    \item \textbf{Output Layer:} 2 neurons for predicted \( G(t) \) and \( P(t) \)
+    \item \textbf{Activation Function:} \texttt{tanh} for all hidden layers
+   
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{images/NN Arch.png}
+\caption{ Visualization of the PINNs. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\vspace{0.3em}
+
+\underline{\textit{Loss Function:}}
+
+The total loss combines physics constraints and initial conditions:
+
+\[
+L_{\text{total}} = w_{\text{phys}} \cdot L_{\text{physics}} + w_{\text{ic}} \cdot L_{\text{initial}}
+\]
+
+\begin{itemize}
+    \item \( L_{\text{physics}} \): Mean squared error of ODE residuals
+    \item \( L_{\text{initial}} \): Error in initial condition predictions
+    \item \( w_{\text{phys}}, w_{\text{ic}} \): Adaptive weights
+\end{itemize}
+
+\vspace{1em}
+
+\subsubsection*{\textbf{b. Simulation Results}} \hfill
+
+\underline{\textit{Case 1: Symmetric Activation (shown in fig 8)}}
+\begin{itemize}
+    \item Network: 128 → 128 → 64 neurons
+    \item Epochs: 30,000
+    \item Training Time: 197.73 seconds
+    \item Result: Minimal activity and early stabilization, consistent with a balanced, undifferentiated state
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Mlcase1.png}
+\caption{  G(t),P(t) for  ncase=1 using PINNs model. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+\vspace{0.5em}
+
+\underline{\textit{Case 2: Asymmetric Activation (shown in fig 9)}}
+\begin{itemize}
+    \item Network: 256 → 256 → 256 → 128 neurons
+    \item Epochs: 50,000
+    \item Training Time: 370.63 seconds
+    \item Result: Strong early growth and later stabilization; shows the bias toward the PU.1-dominant myeloid fate
+\end{itemize}
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Mlcase2.png}
+\caption{  G(t),P(t) for  ncase=2 using PINNs Model. }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\vspace{0.5em}
+
+\begin{table}[H]
+\centering
+\caption{PINN Training Convergence}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Case} & \textbf{Epochs} & \textbf{Training Time (s)} \\
+\hline
+1 & 30,000 & 197.73 \\
+2 & 50,000 & 370.63 \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{1em}
+
+\subsubsection*{\textbf{c. Strengths and Limitations}} \hfill
+
+\underline{\textit{Strengths:}}
+\begin{itemize}
+    \item Learns continuous solutions that respect physical laws
+    \item Offers high accuracy and smooth derivatives through automatic differentiation
+    \item Easily incorporates experimental data or additional constraints
+\end{itemize}
+
+\vspace{0.5em}
+
+\underline{\textit{Limitations:}}
+\begin{itemize}
+    \item Computationally intensive due to long training times
+    \item Highly sensitive to training hyperparameters and network architecture
+    \item May struggle to converge for complex or stiff systems
+\end{itemize}
+
+
+
+
+%\subsection{Future Work}
+
+%\begin{enumerate}
+ %   \item\textbf{Using simpler architecture}  that can reduce parameter sensitivity
+  %  \item \textbf{Adaptive Sampling}: Selecting collocation points based on solution gradients
+   % \item \textbf{Transfer Learning}: Leveraging pretrained models on similar systems
+    %\item \textbf{Hardware Acceleration}: Using GPUs or specialized platforms for faster training
+%\end{enumerate}
+
+
+\section*{VI. COMPREHENSIVE COMPARISON AND ANALYSIS}
+
+To evaluate and compare the performance of the three solution strategies Radau, Trapezoidal, and PINNs. We conducted a detailed analysis based on the two biologically motivated scenarios.
+
+\subsection*{A. Accuracy Evaluation}
+
+We evaluated accuracy using three widely accepted metrics:
+\begin{itemize}
+    \item \textbf{Mean Squared Error (MSE)}: Measures the average squared difference between predicted and exact values. Lower values indicate higher precision.
+    \item \textbf{Mean Absolute Error (MAE)}: Represents the average absolute difference between the predicted and true values.
+    \item \textbf{$R^2$ Score}: Quantifies the proportion of variance explained by the model. A value of 1.0000 denotes perfect predictive performance.
+\end{itemize}
+
+These metrics were used to compare the predicted gene expression trajectories $G(t)$ and $P(t)$ obtained by each solver to the ground truth. Tables are organized by case and variable for clarity.
+
+\subsubsection*{Accuracy of $G(t)$ – Case 1 (Symmetric)}
+
+\begin{table}[h!]
+\centering
+\caption{Accuracy Metrics for $G(t)$ – Case 1 ($a_1 = a_2 = 1$)}
+\label{tab:case1_G}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{MSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+\textbf{Radau}        & $2.74\times10^{-14}$ & 0.0000 & 1.0000 \\
+Trapezoidal  & $8.00\times10^{-14}$ & 0.0000 & 1.0000 \\
+PINN         & $7.26\times10^{-10}$ & 0.0000 & 0.9997 \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{0.5em}
+%\textit{In this case, the dynamic behavior is relatively mild. All three methods achieved extremely low errors, confirming that the symmetric configuration is easy to model numerically. Radau and Trapezoidal show near-machine precision, while PINNs also perform well.}
+
+\textit{All methods showed near-perfect accuracy. Radau and Trapezoidal achieved zero MAE and $R^2 = 1.0000$, while PINN closely followed with $R^2 = 0.9997$, confirming strong performance under smooth dynamics as shown in the table below.}
+
+
+\subsubsection*{Accuracy of $G(t)$ and $P(t)$ – Case 1 (Symmetric)}
+
+\begin{table}[h!]
+\centering
+\caption{Accuracy Metrics for $P(t)$ – Case 1 ($a_1 = a_2 = 1$)}
+\label{tab:case1_P}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{MSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+\textbf{Radau}        & $2.74\times10^{-14}$ & 0.0000 & 1.0000 \\
+Trapezoidal  & $8.00\times10^{-14}$ & 0.0000 & 1.0000 \\
+PINN         & $9.24\times10^{-10}$ & 0.0000 & 0.9996 \\
+\hline
+\end{tabular}
+\end{table}
+\textit{All methods showed near-perfect accuracy under smooth dynamics. Radau and Trapezoidal had zero MAE and $R^2 = 1.0000$, while PINN closely followed with $R^2 = 0.9997$, confirming solver robustness as shown in the table.}
+%\subsubsection*{ Accuracy of $G(t)$ – Case 2 (Asymmetric)}
+
+\begin{table}[h!]
+\centering
+\caption{Accuracy Metrics for $G(t)$ – Case 2 ($a_1 = 5$, $a_2 = 10$)}
+\label{tab:case2_G}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{MSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+\textbf{Radau}        & $2.32\times10^{-14}$ & 0.0000 & 1.0000 \\
+Trapezoidal  & $1.14\times10^{-8}$  & 0.0001 & 1.0000 \\
+PINN         & $4.70\times10^{-8}$  & 0.0001 & 1.0000 \\
+\hline
+\end{tabular}
+\end{table}
+%\textit{This scenario introduces system stiffness and nonlinearity. Radau still maintains excellent performance, while Trapezoidal and PINN incur modest errors, indicating sensitivity to dynamic complexity.}
+
+\subsubsection*{Accuracy of $G(t)$ and $P(t)$ – Case 2 (Asymmetric)}
+
+\begin{table}[h!]
+\centering
+\caption{Accuracy Metrics for $P(t)$ – Case 2 ($a_1 = 5$, $a_2 = 10$)}
+\label{tab:case2_P}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Method} & \textbf{MSE} & \textbf{MAE} & \textbf{$R^2$} \\
+\hline
+\textbf{Radau}        & $1.29\times10^{-13}$ & 0.0000 & 1.0000 \\
+Trapezoidal  & $4.10\times10^{-7}$  & 0.0002 & 1.0000 \\
+PINN         & $5.90\times10^{-7}$  & 0.0004 & 1.0000 \\
+\hline
+\end{tabular}
+\end{table}
+\textit{This case introduces stiffness and nonlinearity, making it harder to solve. Radau stays highly accurate for both $G(t)$ and $P(t)$, while Trapezoidal and PINN show modestly higher errors. All methods remain stable, though PINN performs slightly less well under these conditions as shown in the two table above.}
+
+
+\begin{figure}[H]%[!ht]
+\begin {center}
+\includegraphics[width=0.4\textwidth]{Comparison.png}
+\caption{ MSE ,$R^2$ comparison between the implemented methods }
+\label{fig:ecg}
+\end {center}
+\end{figure}
+
+\subsection*{B. Computational Performance}
+
+\subsubsection*{ Execution Time Comparison}
+
+\begin{table}[h!]
+\centering
+\caption{Computation Time Comparison (in seconds)}
+\label{tab:timing}
+\begin{tabular}{|c|l|c|}
+\hline
+\textbf{Case} & \textbf{Method} & \textbf{Time (s)} \\
+\hline
+\multirow{1} & LSODA        & 0.0022 \\
+                   & \textbf{Radau}        & 0.0519 \\
+                   & Trapezoidal  & 0.0037 \\
+                   & PINN         & 197.73 \\
+\hline
+\multirow{2} & LSODA        & 0.0033 \\
+                   & \textbf{Radau}        & 0.0519 \\
+                   & Trapezoidal  & 0.0062 \\
+                   & PINN         & 370.63 \\
+\hline
+\end{tabular}
+\end{table}
+\textit{As expected, traditional numerical solvers complete in milliseconds to seconds. PINNs, which require intensive training and optimization, are significantly slower, limiting their use in real-time applications.}
+
+\subsection*{C. Method Summary and Ranking}
+
+\begin{table}[h!]
+\centering
+\caption{Overall Method Ranking by Performance}
+\label{tab:ranking}
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Criterion} & \textbf{Top Method} & \textbf{Comment} \\
+\hline
+Accuracy (Case 1)   & Radau       & All methods performed equally well \\
+Accuracy (Case 2)   & \textbf{Radau}       & Superior under nonlinear stiffness \\
+Speed               & \textbf{Trapezoidal} & Fastest stable method overall \\
+Flexibility         & \textbf{PINN}        & Useful for data-driven or hybrid modeling \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\section{Future Work}
+
+\begin{enumerate}
+   \item\textbf{Using simpler architecture}  that can reduce parameter sensitivity
+  \item \textbf{Adaptive Sampling}: Selecting collocation points based on solution gradients
+    \item \textbf{Transfer Learning}: Leveraging pretrained models on similar systems
+    \item \textbf{Hardware Acceleration}: Using GPUs or specialized platforms for faster training
+    \item\textbf{Adaptive Time Stepping}: Incorporate dynamic step-size control based on local error estimation to enhance efficiency and stability.
+
+
+\end{enumerate}
+
+
+\section{ Conclusion}
+
+This comparative analysis illustrates the strengths and trade-offs of each solver. \textbf{Radau} provides the highest accuracy, particularly in stiff or nonlinear systems, though it incurs moderate computational cost. \textbf{Trapezoidal} offers a balanced alternative, maintaining precision with faster runtime. \textbf{PINNs}, while computationally intensive, show strong potential in cases where data integration or model flexibility is crucial.
+
+\printbibliography
+\vspace{0.5em}
+References:  \\[0.001in]
+
+[1] G. E. Karniadakis, I. G. Kevrekidis, L. Lu, P. Perdikaris, S. Wang, and L. Yang, “Physics-informed machine learning,” Nature Reviews Physics, vol. 3, no. 6, pp. 422–440, Jun. 2021, doi: 10.1038/s42254-021-00314-5.
+
+[2] C. Duff, K. Smith-Miles, L. Lopes, and T. Tian, “Mathematical modelling of stem cell differentiation: The PU.1–GATA-1 interaction,” Journal of Mathematical Biology, vol. 64, no. 3, pp. 449–468, Feb. 2012, doi: 10.1007/s00285-011-0419-3.
+
+[3] M. Sarabian, E. C. Parigoris, and M. J. Simpson, “Parameter estimation for models of stem cell dynamics with sparse data,” Journal of Theoretical Biology, vol. 546, p. 111186, 2022, doi: 10.1016/j.jtbi.2022.111186.
+ 
+% that's all folks
+\end{document}
+
+
