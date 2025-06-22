@@ -98,9 +98,12 @@ dP/dt = a₁G²/(1+G²) - P     (PU.1 dynamics)
 │   ├── 🔢 Radau.py                  # Implicit Runge-Kutta
 │   └── 📐 Trapzoidal.py             # Classical explicit method
 │
-├── 📚 report/
-│   └── 📖 Full_Extended_version.md   # Complete analysis (pages)
-│   └── 📖 Numerical_Report_Team_4.pdf   # Main report (4 pages)
+├── 📚 report/                        # Project documentation
+│   ├── 🎤 presentation/             # Slides and visuals for presentation
+│   │   ├── Course_Project_Presentation.pdf   # Project presentation (PDF)
+│   │   └── Course_Project_Presentation.pptx  # Project presentation (PowerPoint)
+│   ├── 📖 Full_Extended_version.md   # Complete analysis (pages)
+│   ├── 📖 Numerical_Report_Team_4.pdf   # Main report (4 pages)
 │   └── 📖 Numerical_Report_Team_4(Latex_Version).tex   # Main report (Latex-Code)
 │
 ├── 📊 results/                       # Generated visualizations
